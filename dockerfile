@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libdrm2 \
     libgbm1 \
+	libx11-dev \
+ 	libxkbfile-dev \
+  	pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install
