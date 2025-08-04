@@ -20,11 +20,13 @@ RUN apt-get update && apt-get install -y \
 COPY package*.json ./
 COPY .nvmrc ./
 
-# Install com mais configurações para node-gyp
-RUN npm config set python python3
+# Install com configurações corretas para node-gyp
 RUN npm config set target_platform linux
 RUN npm config set target_arch x64
 RUN npm cache clean --force
+
+# Configurar Python para node-gyp via variável de ambiente
+ENV PYTHON=/usr/bin/python3
 
 # Install dependencies com rebuild forçado
 RUN npm install --build-from-source
