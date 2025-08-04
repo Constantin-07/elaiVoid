@@ -1,12 +1,52 @@
-FROM node:20
+# Stage 1: Build com todas as dependências
+FROM node:20 AS builder
 
 WORKDIR /app
 
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV NODE_OPTIONS="--max-old-space-size=6144"
 
+# Instalar TODAS as dependências de build
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    python3-distutils \
+    python3-dev \
+    make \
+    g++ \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package*.json ./
+COPY .nvmrc ./
+
+# Install com mais configurações para node-gyp
+RUN npm config set python python3
+RUN npm config set target_platform linux
+RUN npm config set target_arch x64
+RUN npm cache clean --force
+
+# Install dependencies com rebuild forçado
+RUN npm install --build-from-source
+RUN npm rebuild
+
+# Copy source code
 COPY . .
 
-# Install required dependencies
+# Build application
+RUN npm run buildreact
+RUN npm run compile
+RUN npm run electron
+RUN npm run compile-web
+
+# Stage 2: Runtime mínimo
+FROM node:20-slim AS runtime
+
+WORKDIR /app
+
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Install apenas runtime dependencies
 RUN apt-get update && apt-get install -y \
     libfuse2 \
     libglib2.0-0 \
@@ -18,21 +58,12 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libdrm2 \
     libgbm1 \
-	libx11-dev \
- 	libxkbfile-dev \
-  	pkg-config \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install
-
-RUN npm run buildreact
-
-RUN npm run compile
-
-RUN npm run electron
-
-RUN npm run compile-web
+# Copy da build stage
+COPY --from=builder /app .
 
 EXPOSE 8080
 
-CMD ["bash", "-c", "./scripts/code-web.sh --host 0.0.0.0 --port 8080"]
+CMD ["bash", "-c", "./scripts/code-web.sh --host 0.0.0.0 --port ${PORT:-8080}"]
