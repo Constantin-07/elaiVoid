@@ -5,12 +5,17 @@ WORKDIR /app
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV PYTHON=/usr/bin/python3
 
+# CORRIGIDO: Adicionadas as bibliotecas necessárias para native-keymap
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3 \
     python3-dev \
     make \
     g++ \
+    pkg-config \
+    libx11-dev \
+    libxkbfile-dev \
+    libsecret-1-dev \
     libfuse2 \
     libglib2.0-0 \
     libgtk-3-0 \
