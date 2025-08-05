@@ -2,14 +2,15 @@ FROM node:20
 
 WORKDIR /app
 
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV PYTHON=/usr/bin/python3
 
-
-ENV HUSKY=0
-ENV CI=true
-
-# Install required dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    python3-dev \
+    make \
+    g++ \
     libfuse2 \
     libglib2.0-0 \
     libgtk-3-0 \
@@ -20,20 +21,19 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libdrm2 \
     libgbm1 \
-	libx11-dev \
- 	libxkbfile-dev \
-  	pkg-config \
-	libx11-dev \
- 	libxkbfile-dev \
-  	pkg-config \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
-RUN npm config set ignore-scripts false
-RUN npm install --ignore-scripts || npm install --force
+# SIMPLE FIX: Comment out the problematic git commands
+RUN sed -i "s/cp.execSync('git config pull.rebase merges');/\/\/ cp.execSync('git config pull.rebase merges');/" build/npm/postinstall.js
+RUN sed -i "s/cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');/\/\/ cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');/" build/npm/postinstall.js
 
+# Install
 RUN npm install
+
+# Build
 RUN npm run buildreact
 RUN npm run compile
 RUN npm run electron
@@ -41,4 +41,4 @@ RUN npm run compile-web
 
 EXPOSE 8080
 
-CMD ["bash", "-c", "./scripts/code-web.sh --host 0.0.0.0 --port 8080"]
+CMD ["bash", "-c", "./scripts/code-web.sh --host 0.0.0.0 --port ${PORT:-8080}"]
