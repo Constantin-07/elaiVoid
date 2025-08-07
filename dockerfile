@@ -3,7 +3,7 @@ FROM node:20 as builder
 
 WORKDIR /app
 
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 ENV ELECTRON_CACHE=/app/.cache/electron
 
 RUN apt-get update && apt-get install -y \
