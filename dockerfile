@@ -82,10 +82,13 @@ COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/cli ./cli
 COPY --from=builder /app/remote ./remote
+COPY --from=builder /app/.build ./.build
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/product.json ./product.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/tsfmt.json ./tsfmt.json
 COPY --from=builder /app/gulpfile.js ./gulpfile.js
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 EXPOSE 8080
 
