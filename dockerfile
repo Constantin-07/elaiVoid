@@ -85,6 +85,7 @@ COPY --from=builder /app/remote ./remote
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/product.json ./product.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/gulpfile.js ./gulpfile.js
 
 EXPOSE 8080
 
