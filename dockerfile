@@ -55,11 +55,10 @@ ENV PYTHON=/usr/bin/python3
 
 # Instalar apenas dependências runtime necessárias, usando apk (pacote Alpine)
 RUN apk add --no-cache \
-    libfuse \
+    fuse \
     glib \
     gtk+3.0 \
     libx11 \
-    libxss \
     libxtst \
     nss \
     alsa-lib \
