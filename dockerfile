@@ -73,21 +73,8 @@ RUN apt-get update && apt-get install -y \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar TODOS os arquivos necessários do build anterior
-COPY --from=builder /app/out ./out
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/resources ./resources
-COPY --from=builder /app/scripts ./scripts
-COPY --from=builder /app/extensions ./extensions
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/cli ./cli
-COPY --from=builder /app/remote ./remote
-COPY --from=builder /app/.build ./.build
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/product.json ./product.json
-COPY --from=builder /app/package-lock.json ./package-lock.json
-COPY --from=builder /app/tsfmt.json ./tsfmt.json
-COPY --from=builder /app/gulpfile.js ./gulpfile.js
+# Copiar toda a estrutura necessária do build anterior
+COPY --from=builder /app ./
 
 EXPOSE 8080
 
