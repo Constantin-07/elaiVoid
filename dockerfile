@@ -94,6 +94,7 @@ COPY --from=builder /app/package-lock.json ./package-lock.json
 COPY --from=builder /app/tsfmt.json ./tsfmt.json
 COPY --from=builder /app/gulpfile.js ./gulpfile.js
 COPY --from=builder /app/eslint.config.js ./eslint.config.js
+COPY --from=builder /app/.npmrc ./.npmrc
 
 EXPOSE 8080
 
