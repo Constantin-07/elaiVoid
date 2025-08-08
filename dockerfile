@@ -82,7 +82,6 @@ COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/cli ./cli
 COPY --from=builder /app/remote ./remote
-COPY --from=builder /app/.build ./.build
 COPY --from=builder /app/.eslint-ignore ./.eslint-ignore
 COPY --from=builder /app/.eslint-plugin-local ./.eslint-plugin-local
 COPY --from=builder /app/.config ./.config
@@ -95,6 +94,8 @@ COPY --from=builder /app/tsfmt.json ./tsfmt.json
 COPY --from=builder /app/gulpfile.js ./gulpfile.js
 COPY --from=builder /app/eslint.config.js ./eslint.config.js
 COPY --from=builder /app/.npmrc ./.npmrc
+COPY --from=builder /app/cgmanifest.json ./cgmanifest.json
+
 
 EXPOSE 8080
 
