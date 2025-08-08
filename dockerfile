@@ -73,8 +73,27 @@ RUN apt-get update && apt-get install -y \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar toda a estrutura necessária do build anterior
-COPY --from=builder /app ./
+# Copiar TODOS os arquivos necessários do build anterior (incluindo arquivos ocultos)
+COPY --from=builder /app/out ./out
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/resources ./resources
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/extensions ./extensions
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/cli ./cli
+COPY --from=builder /app/remote ./remote
+COPY --from=builder /app/.build ./.build
+COPY --from=builder /app/.eslint-ignore ./.eslint-ignore
+COPY --from=builder /app/.eslint-plugin-local ./.eslint-plugin-local
+COPY --from=builder /app/.config ./.config
+COPY --from=builder /app/.configurations ./.configurations
+COPY --from=builder /app/.vscode ./.vscode
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/product.json ./product.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/tsfmt.json ./tsfmt.json
+COPY --from=builder /app/gulpfile.js ./gulpfile.js
+COPY --from=builder /app/eslint.config.js ./eslint.config.js
 
 EXPOSE 8080
 
