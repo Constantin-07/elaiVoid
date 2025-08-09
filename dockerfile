@@ -6,7 +6,7 @@ WORKDIR /app
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV PYTHON=/usr/bin/python3
 
-# Instalar dependências necessárias para build e native-keymap
+# CORRIGIDO: Adicionadas as bibliotecas necessárias para native-keymap
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3 \
@@ -39,37 +39,41 @@ RUN sed -i "s/cp.execSync('git config blame.ignoreRevsFile .git-blame-ignore-rev
 # Install
 RUN npm install
 
-# Prune dev dependencies to keep only production dependencies
-RUN npm prune --production
-
 # Build
-RUN npm run buildreact && npm run compile && npm run electron && npm run compile-web
+RUN npm run buildreact
+RUN npm run compile
+RUN npm run electron
+RUN npm run compile-web
 
 # STAGE 2: Runtime (imagem limpa e leve)
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
+# Configurações otimizadas para runtime no Render
 ENV NODE_OPTIONS="--max-old-space-size=400"
 ENV PYTHON=/usr/bin/python3
 
-# Instalar apenas dependências runtime necessárias, usando apk (pacote Alpine)
-RUN apk add --no-cache \
-    fuse \
-    glib \
-    gtk+3.0 \
-    libx11 \
-    libxtst \
-    nss \
-    alsa-lib \
-    libdrm \
-    mesa-gl \
-    libxkbfile \
-    libsecret \
+# Instalar apenas dependências runtime necessárias
+RUN apt-get update && apt-get install -y \
+    libfuse2 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libx11-xcb1 \
+    libxss1 \
+    libxtst6 \
+    libnss3 \
+    libasound2 \
+    libdrm2 \
+    libgbm1 \
+    libx11-6 \
+    libxkbfile1 \
+    libsecret-1-0 \
     curl \
-    bash
+    bash \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiar arquivos necessários do builder para runtime
+# Copiar TODOS os arquivos necessários do build anterior (incluindo arquivos ocultos)
 COPY --from=builder /app/out ./out
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/resources ./resources
@@ -78,13 +82,22 @@ COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/cli ./cli
 COPY --from=builder /app/remote ./remote
+COPY --from=builder /app/.eslint-ignore ./.eslint-ignore
+COPY --from=builder /app/.eslint-plugin-local ./.eslint-plugin-local
+COPY --from=builder /app/.config ./.config
+COPY --from=builder /app/.configurations ./.configurations
+COPY --from=builder /app/.vscode ./.vscode
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/product.json ./product.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/tsfmt.json ./tsfmt.json
+COPY --from=builder /app/gulpfile.js ./gulpfile.js
+COPY --from=builder /app/eslint.config.js ./eslint.config.js
+COPY --from=builder /app/.npmrc ./.npmrc
+COPY --from=builder /app/cgmanifest.json ./cgmanifest.json
 
-# Limpar caches e arquivos temporários
-RUN rm -rf /tmp/* /var/cache/apk/* /root/.npm/_cacache
 
 EXPOSE 8080
 
-# Simplificar script de start, usando sh em vez de bash se possível
-CMD ["sh", "-c", "NODE_OPTIONS='--max-old-space-size=350' ./scripts/code-web.sh --host 0.0.0.0 --port ${PORT:-8080}"]
+# Usar exatamente o mesmo comando que funciona, mas com menos memória
+CMD ["bash", "-c", "NODE_OPTIONS='--max-old-space-size=350' ./scripts/code-web.sh --host 0.0.0.0 --port ${PORT:-8080}"]
